@@ -4,8 +4,7 @@ folium==0.19.2
 pandas==2.2.3
 requests==2.32.3
 geopy==2.4.1
-bcrypt==4.2.0
-gspread==6.8.0
-gspread-dataframe==3.3.1
+passlib[bcrypt]==1.8.2
+gspread==5.9.0
+gspread-dataframe==4.2.2
 google-auth==2.22.0
-streamlit-cookies-manager==0.4.3
