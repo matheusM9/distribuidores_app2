@@ -9,7 +9,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import requests
 import json
-import bcrypt
+from passlib.hash import bcrypt
 import gspread
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 from google.oauth2 import service_account
@@ -32,17 +32,14 @@ if not cookies.ready():
     st.stop()
 
 # -----------------------------
-# GOOGLE SHEETS (USANDO SECRETS)
+# GOOGLE SHEETS
 # -----------------------------
 SHEET_ID = "1NnqSEpQccjVq_AAVQK3l6IXPHj5Kf6Uq-rvkBkYg9Hs"
 SHEET_NAME = "Sheet1"
+CRED_JSON = "service_account.json"
 
-# Usando Streamlit Secrets
-gcp_json_str = st.secrets["gcp_service_account"]["json"]
-gcp_info = json.loads(gcp_json_str)
-
-creds = service_account.Credentials.from_service_account_info(
-    gcp_info,
+creds = service_account.Credentials.from_service_account_file(
+    CRED_JSON,
     scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 )
 client = gspread.authorize(creds)
@@ -194,7 +191,7 @@ def init_usuarios():
             if not isinstance(usuarios, dict):
                 raise ValueError("Formato inválido")
     except (FileNotFoundError, json.JSONDecodeError, ValueError):
-        senha_hash = bcrypt.hashpw("admin123".encode(), bcrypt.gensalt()).decode()
+        senha_hash = bcrypt.hash("admin123")
         usuarios = {"admin": {"senha": senha_hash, "nivel": "editor"}}
         with open(USUARIOS_FILE, "w") as f:
             json.dump(usuarios, f, indent=4)
@@ -219,7 +216,7 @@ if not logado:
     usuario = st.text_input("Usuário")
     senha = st.text_input("Senha", type="password")
     if st.button("Entrar"):
-        if usuario in usuarios and bcrypt.checkpw(senha.encode(), usuarios[usuario]["senha"].encode()):
+        if usuario in usuarios and bcrypt.verify(senha, usuarios[usuario]["senha"]):
             cookies["usuario"] = usuario
             cookies["nivel"] = usuarios[usuario]["nivel"]
             cookies.save()
