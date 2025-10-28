@@ -32,14 +32,17 @@ if not cookies.ready():
     st.stop()
 
 # -----------------------------
-# GOOGLE SHEETS
+# GOOGLE SHEETS (USANDO SECRETS)
 # -----------------------------
 SHEET_ID = "1NnqSEpQccjVq_AAVQK3l6IXPHj5Kf6Uq-rvkBkYg9Hs"
 SHEET_NAME = "Sheet1"
-CRED_JSON = "service_account.json"
 
-creds = service_account.Credentials.from_service_account_file(
-    CRED_JSON,
+# Usando Streamlit Secrets
+gcp_json_str = st.secrets["gcp_service_account"]["json"]
+gcp_info = json.loads(gcp_json_str)
+
+creds = service_account.Credentials.from_service_account_info(
+    gcp_info,
     scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 )
 client = gspread.authorize(creds)
